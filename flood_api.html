@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <title>Flood Simulator 3000</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/cesiumjs/1.105/Build/Cesium/Cesium.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <link href="https://ajax.googleapis.com/ajax/libs/cesiumjs/1.105/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="flood_api.css">
+  <script src="script/labels.js"></script>
+  <script src="script/ea_api.js"></script>
+  <script src="script/cesium.js"></script>
+  <script src="script/google.js"></script>
+  <script src="script/message.js"></script>
+</head>
+<body>
+    <div id="cesiumContainer">
+        <div id="searchBar">
+            <h1 id="search_desc" class="govuk-caption-xl">Check for flooding in your area.</h1>
+            <input
+                    type="text"
+                    id="pacViewPlace"
+                    name="pacViewPlace"
+                    placeholder="Enter a location..."
+                />
+        </div>
+        <div id="leftBar">
+            <button id="hideLeftBarButton" style="position: absolute; top: 0; right: 0;">Hide</button>
+            <h1 id="title" class="govuk-caption-xl"></h1>
+            <p id="severity" class="govuk-caption-xl"></p>
+            <p id="severity_todo" class="govuk-body"></p>
+            <p id="more_info" class="govuk-caption-xl"></p>
+            <p id="message" class="govuk-body"></p>
+            
+        </div>
+    </div>
+    <script>
+        var google_api_key = secrets.GOOGLE_API_KEY
+        var leftBar = document.getElementById('leftBar');
+        leftBar.style.display = 'none';
+        Cesium.RequestScheduler.requestsByServer["tile.googleapis.com:443"] = 18;
+        const viewer = new Cesium.Viewer('cesiumContainer', {
+            imageryProvider: false,
+            baseLayerPicker: false,
+            geocoder: false,
+            globe: false,
+            animation: false,
+            timeline: false,
+            homeButton: false,
+            fullscreenButton: false,
+            sceneModePicker: false,
+            navigationInstructionsInitiallyVisible: true,
+            navigationHelpButton: true,
+            // https://cesium.com/blog/2018/01/24/cesium-scene-rendering-performance/#enabling-request-render-mode
+            requestRenderMode: true,
+        });
+        // Gets rid of the cesium logo.
+        viewer._cesiumWidget._creditContainer.style.display = "none";
+        // Add 3D Tiles tileset.
+        const tileset = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
+        url: `https://tile.googleapis.com/v1/3dtiles/root.json?key={google_api_key}`,
+        // This property is needed to appropriately display attributions
+        showCreditsOnScreen: true
+        }));
+        timeset(); //cesium.js
+        getFloodWarning(); //ea_api.js
+        let handler = new Cesium.ScreenSpaceEventHandler(viewer.canvas);
+        handler.setInputAction(function(click) {
+            let pickedObject = viewer.scene.pick(click.position);
+            console.log(pickedObject)
+            if (Cesium.defined(pickedObject) && pickedObject.id) {
+                // Fetch data from the API when the polygon is clicked
+                let id = pickedObject.id;
+                fetch(`https://environment.data.gov.uk/flood-monitoring/id/floods/${id}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Get the description and message from the data
+                        var description = data.items.description;
+                        var severity = data.items.severity;
+                        
+                        var message = data.items.message;
+                        // Update the HTML elements
+                        document.getElementById('title').innerHTML = description;
+                        document.getElementById('more_info').innerHTML = `More information:`;
+                        document.getElementById('message').innerHTML = message;
+                        switch (data.items.severityLevel){
+                            case 1:
+                                var additionalText = `
+                                <span style="color: black; font-weight: normal;">
+                                        <ul>
+                                            <li>Call 999 if in immediate danger</li>
+                                            <li>Follow advice from emergency services</li>
+                                            <li>Keep yourself and your family safe</li>
+                                        </ul>
+                                    `;
+                                document.getElementById('severity').innerHTML = "Severe flood warning - Survive" + additionalText;
+                                document.getElementById('severity').style.color = "red";
+                                document.getElementById('severity').style.fontWeight = "bold"; // Add this line
+
+                                break;
+                            case 2:
+                                var additionalText = `
+                                    <span style="color: black; font-weight: normal;">
+                                            <ul>
+                                                <li>Turn off gas, water and electricity.</li>
+                                                <li>Move things upstairs or to safety.</li>
+                                                <li>Move family, pets and car to safety.</li>
+                                            </ul>
+                                        `;
+                                document.getElementById('severity').innerHTML = "Flood Alert - Act" + additionalText;
+                                document.getElementById('severity').style.color = "red";
+                                document.getElementById('severity').style.fontWeight = "bold"; // Add this line
+                                break;
+                            case 3:
+                                var additionalText = `
+                                <span style="color: black; font-weight: normal">
+                                            <ul>
+                                                <li>Prepare a bag that includes medicines and insurance documents</li>
+                                                <li>Check flood warnings</li>
+                                            </ul>
+                                        `;
+                                document.getElementById('severity').innerHTML = "Flood Alert - Prepare" + additionalText;
+                                document.getElementById('severity').style.color = "orange";
+                                document.getElementById('severity').style.fontWeight = "bold"; // Add this line
+                                break;
+                            case 4:
+                                document.getElementById('severity').innerHTML = "Flood Alert has been removed";
+                                document.getElementById('severity').style.color = "green";
+                                document.getElementById('severity').style.fontWeight = "bold"; // Add this line
+                                break;
+                        }
+                        var leftBar = document.getElementById('leftBar');
+                        leftBar.style.display = "block";
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+        }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+        const zoomToViewport = (viewport) => {
+            // Calculate the center of the viewport
+            const centerLng = (viewport.getNorthEast().lng() + viewport.getSouthWest().lng()) / 2;
+            const centerLat = (viewport.getNorthEast().lat() + viewport.getSouthWest().lat()) / 2;
+            // Create a bounding sphere for the viewport
+            const boundingSphere = new Cesium.BoundingSphere(
+                Cesium.Cartesian3.fromDegrees(centerLng, centerLat),
+                Cesium.Cartesian3.distance(
+                    Cesium.Cartesian3.fromDegrees(viewport.getSouthWest().lng(), viewport.getSouthWest().lat()),
+                    Cesium.Cartesian3.fromDegrees(viewport.getNorthEast().lng(), viewport.getNorthEast().lat())
+                ) / 2
+            );
+            // Fly the camera to the bounding sphere
+            viewer.camera.flyToBoundingSphere(boundingSphere);
+            // Pop up the left bar
+            document.getElementById('title').innerHTML = "Click the warning on the map for more information.";
+            document.getElementById('message').innerHTML = floodWarningMessage;
+            document.getElementById('severity').innerHTML = "";
+            document.getElementById('more_info').innerHTML = "";
+            var leftBar = document.getElementById('leftBar');
+            leftBar.style.display = "block";
+
+            };
+
+        viewer.camera.setView({
+            destination : Cesium.Cartesian3.fromDegrees(-1.1743, 52.3555, 700000), // Center of England
+            orientation: {
+                heading : Cesium.Math.toRadians(0), // North, up
+                pitch : Cesium.Math.toRadians(-90), // Look down
+                roll : 0.0
+            }
+        });
+        getCityLabel();
+        document.getElementById('hideLeftBarButton').addEventListener('click', function() {
+        document.getElementById('leftBar').style.display = 'none';
+         });
+    
+    </script>
+    <script
+        async=""
+        var src = `https://maps.googleapis.com/maps/api/js?key=${google_api_key}&libraries=places&callback=initAutocomplete`;
+    ></script>
+
+</body>
+
+
