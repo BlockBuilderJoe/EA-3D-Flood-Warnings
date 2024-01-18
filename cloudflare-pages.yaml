@@ -1,5 +1,0 @@
-name: my-project
-type: static
-root: ./
-output: ./
-build: node build.js
