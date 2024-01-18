@@ -1,0 +1,4 @@
+name: my-project
+type: static
+root: ./
+build: node build.js
