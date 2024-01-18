@@ -36,7 +36,7 @@ function manualGoogleSearch(place_string) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-Goog-Api-Key': 'AIzaSyCRIWoha_ZZ5UBSnL0dZ8mHk9xOzkmJpS0',
+            'X-Goog-Api-Key': 'AIzaSyCMJmYqeQ78nkknErT_v7H_Zt1w1NhGKxM',
             'X-Goog-FieldMask': 'places.viewport'
         },
         body: JSON.stringify({

@@ -7,7 +7,6 @@
   display: flex;
   z-index: 0;
 }
-
 #searchBar {
   position: absolute;
   flex-direction: column;
