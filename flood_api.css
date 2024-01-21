@@ -7,6 +7,17 @@
   display: flex;
   z-index: 0;
 }
+#copyright-text {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  font-family: Arial, sans-serif;
+  font-size: 12pt;
+  color: white;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.5); /* Optional: make the text more readable on top of the map */
+  z-index: 1;
+}
 #searchBar {
   position: absolute;
   flex-direction: column;
