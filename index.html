@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <title>Earthly</title>
@@ -13,8 +14,19 @@
   <script src="script/message.js"></script>
 </head>
 <body>
-    <div id="cesiumContainer">
+    <!-- Search Bar Container -->
+    <div id="searchBar">
+      <input
+        id="pacViewPlace"
+        class="controls"
+        type="text"
+        placeholder="Search for places..."
+      />
     </div>
+
+    <!-- Cesium Container -->
+    <div id="cesiumContainer"></div>
+
     <script>
         Cesium.RequestScheduler.requestsByServer["tile.googleapis.com:443"] = 18;
         const viewer = new Cesium.Viewer('cesiumContainer', {
@@ -29,21 +41,51 @@
             sceneModePicker: false,
             navigationInstructionsInitiallyVisible: true,
             navigationHelpButton: true,
-            // https://cesium.com/blog/2018/01/24/cesium-scene-rendering-performance/#enabling-request-render-mode
+            // Enables request render mode for performance optimization
             requestRenderMode: true,
         });
-        // Gets rid of the cesium logo.
+
+        // Hides the Cesium logo
         viewer._cesiumWidget._creditContainer.style.display = "none";
-        // Add 3D Tiles tileset using the updated fromUrl method.
+
+        // Coordinates for the target location (e.g., London)
+        const targetLongitude = -0.1276; // Replace with your desired longitude
+        const targetLatitude = 51.5074;  // Replace with your desired latitude
+        const targetHeight = 1000;        // Replace with your desired height in meters
+
+        // Function to position the camera
+        function positionCamera() {
+            viewer.camera.flyTo({
+                destination: Cesium.Cartesian3.fromDegrees(targetLongitude, targetLatitude, targetHeight),
+                orientation: {
+                    heading: Cesium.Math.toRadians(0),    // 0 degrees
+                    pitch: Cesium.Math.toRadians(-30),    // -30 degrees looking down
+                    roll: 0.0
+                },
+                duration: 3, // Duration in seconds
+                easingFunction: Cesium.EasingFunction.QUADRACTIC_IN_OUT
+            });
+        }
+
+        // Load the 3D Tileset and position the camera once loaded
         Cesium.Cesium3DTileset.fromUrl("https://tile.googleapis.com/v1/3dtiles/root.json?key=AIzaSyCMJmYqeQ78nkknErT_v7H_Zt1w1NhGKxM")
             .then(function(tileset) {
                 viewer.scene.primitives.add(tileset);
                 tileset.showCreditsOnScreen = true;
+
+                // Fly to the tileset's bounding sphere
+                viewer.zoomTo(tileset)
+                    .otherwise(function(error){
+                        console.error(error);
+                    });
             })
             .catch(function(error) {
                 console.error("Failed to load tileset:", error);
             });
-        timeset(); //cesium.js
+
+        // Initialize the timeset (from cesium.js)
+        timeset(); // Ensure this function is defined in script/cesium.js
+
         let handler = new Cesium.ScreenSpaceEventHandler(viewer.canvas);
         
         const zoomToViewport = (viewport) => {
@@ -63,6 +105,8 @@
             // Pop up the left bar
         };
 
+        // Remove or comment out the initial camera setView if it's conflicting
+        /*
         viewer.camera.setView({
             destination : Cesium.Cartesian3.fromDegrees(-1.1743, 52.3555, 700000), // Center of England
             orientation: {
@@ -71,11 +115,11 @@
                 roll : 0.0
             }
         });
-
+        */
     </script>
     <script
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCMJmYqeQ78nkknErT_v7H_Zt1w1NhGKxM&libraries=places&callback=initAutocomplete"
         defer
     ></script>
-
 </body>
+</html>
