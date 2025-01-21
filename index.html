@@ -73,10 +73,14 @@
                 viewer.scene.primitives.add(tileset);
                 tileset.showCreditsOnScreen = true;
 
-                // Fly to the tileset's bounding sphere
-                viewer.zoomTo(tileset)
-                    .otherwise(function(error){
-                        console.error(error);
+                // Wait until the tileset is ready before positioning the camera
+                tileset.readyPromise
+                    .then(function() {
+                        // Position the camera to the specific location
+                        positionCamera();
+                    })
+                    .catch(function(error) { // Replaced .otherwise with .catch
+                        console.error("Error loading tileset:", error);
                     });
             })
             .catch(function(error) {
