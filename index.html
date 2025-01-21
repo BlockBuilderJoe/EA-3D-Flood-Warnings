@@ -35,7 +35,7 @@
         // Gets rid of the cesium logo.
         viewer._cesiumWidget._creditContainer.style.display = "none";
         // Add 3D Tiles tileset using the updated fromUrl method.
-        Cesium.Cesium3DTileset.fromUrl("https://tile.googleapis.com/v1/3dtiles/root.json?key=YOUR_API_KEY")
+        Cesium.Cesium3DTileset.fromUrl("https://tile.googleapis.com/v1/3dtiles/root.json?key=AIzaSyCMJmYqeQ78nkknErT_v7H_Zt1w1NhGKxM")
             .then(function(tileset) {
                 viewer.scene.primitives.add(tileset);
                 tileset.showCreditsOnScreen = true;
