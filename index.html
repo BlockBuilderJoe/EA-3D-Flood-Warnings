@@ -73,15 +73,8 @@
                 viewer.scene.primitives.add(tileset);
                 tileset.showCreditsOnScreen = true;
 
-                // Wait until the tileset is ready before positioning the camera
-                tileset.readyPromise
-                    .then(function() {
-                        // Position the camera to the specific location
-                        positionCamera();
-                    })
-                    .catch(function(error) { // Replaced .otherwise with .catch
-                        console.error("Error loading tileset:", error);
-                    });
+                // Position the camera after the tileset is loaded
+                positionCamera();
             })
             .catch(function(error) {
                 console.error("Failed to load tileset:", error);
@@ -122,8 +115,9 @@
         */
     </script>
     <script
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCMJmYqeQ78nkknErT_v7H_Zt1w1NhGKxM&libraries=places&callback=initAutocomplete"
+        async
         defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCMJmYqeQ78nkknErT_v7H_Zt1w1NhGKxM&libraries=places&callback=initAutocomplete"
     ></script>
 </body>
 </html>
