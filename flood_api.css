@@ -30,19 +30,6 @@
   display: flex;
   z-index: 1;
 }
-#leftBar {
-  position: absolute;
-  flex-direction: column;
-  left: 0%;
-  margin: 10px;
-  top: 115px;
-  width: 30%;
-  height: auto;
-  background-color: #ffffff;
-  opacity: 0.9;
-  z-index: 1;
-  display: flex;
-}
 #pacViewPlace {
   position: static; 
   display: block;

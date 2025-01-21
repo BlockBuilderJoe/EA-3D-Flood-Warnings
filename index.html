@@ -16,8 +16,6 @@
     <div id="cesiumContainer">
     </div>
     <script>
-        var leftBar = document.getElementById('leftBar');
-        leftBar.style.display = 'none';
         Cesium.RequestScheduler.requestsByServer["tile.googleapis.com:443"] = 18;
         const viewer = new Cesium.Viewer('cesiumContainer', {
             imageryProvider: false,
@@ -61,10 +59,6 @@
             // Fly the camera to the bounding sphere
             viewer.camera.flyToBoundingSphere(boundingSphere);
             // Pop up the left bar
-
-            var leftBar = document.getElementById('leftBar');
-            leftBar.style.display = "block";
-
             };
 
         viewer.camera.setView({
@@ -75,10 +69,7 @@
                 roll : 0.0
             }
         });
-        document.getElementById('hideLeftBarButton').addEventListener('click', function() {
-        document.getElementById('leftBar').style.display = 'none';
-         });
-    
+
     </script>
     <script
         async=""
