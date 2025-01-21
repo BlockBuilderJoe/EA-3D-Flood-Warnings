@@ -34,16 +34,18 @@
         });
         // Gets rid of the cesium logo.
         viewer._cesiumWidget._creditContainer.style.display = "none";
-        // Add 3D Tiles tileset.
-        const tileset = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
-        url: "https://tile.googleapis.com/v1/3dtiles/root.json?key=AIzaSyCMJmYqeQ78nkknErT_v7H_Zt1w1NhGKxM",
-        // This property is needed to appropriately display attributions
-        showCreditsOnScreen: true
-        }));
+        // Add 3D Tiles tileset using the updated fromUrl method.
+        Cesium.Cesium3DTileset.fromUrl("https://tile.googleapis.com/v1/3dtiles/root.json?key=YOUR_API_KEY")
+            .then(function(tileset) {
+                viewer.scene.primitives.add(tileset);
+                tileset.showCreditsOnScreen = true;
+            })
+            .catch(function(error) {
+                console.error("Failed to load tileset:", error);
+            });
         timeset(); //cesium.js
         let handler = new Cesium.ScreenSpaceEventHandler(viewer.canvas);
         
-
         const zoomToViewport = (viewport) => {
             // Calculate the center of the viewport
             const centerLng = (viewport.getNorthEast().lng() + viewport.getSouthWest().lng()) / 2;
@@ -59,7 +61,7 @@
             // Fly the camera to the bounding sphere
             viewer.camera.flyToBoundingSphere(boundingSphere);
             // Pop up the left bar
-            };
+        };
 
         viewer.camera.setView({
             destination : Cesium.Cartesian3.fromDegrees(-1.1743, 52.3555, 700000), // Center of England
