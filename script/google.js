@@ -1,7 +1,7 @@
 //google api script
 // This controls the google search bar and then zooms to the location based on input or autocomplete.
 let manualsearchOccured = false;
-function initAutocomplete() {
+async function initAutocomplete() {
     const autocomplete = new google.maps.places.Autocomplete(
         document.getElementById("pacViewPlace"),
         {
