@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <head>
   <meta charset="utf-8">
-  <title>EA api 3d flood demo</title>
+  <title>Earthly</title>
   <script src="https://ajax.googleapis.com/ajax/libs/cesiumjs/1.105/Build/Cesium/Cesium.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <link href="https://ajax.googleapis.com/ajax/libs/cesiumjs/1.105/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
@@ -14,27 +14,6 @@
 </head>
 <body>
     <div id="cesiumContainer">
-        <div id="searchBar">
-            <h1 id="search_desc" class="govuk-caption-xl">Check for flooding in your area.</h1>
-            <input
-                    type="text"
-                    id="pacViewPlace"
-                    name="pacViewPlace"
-                    placeholder="Enter a location..."
-                />
-        </div>
-        <div id="leftBar">
-            <button id="hideLeftBarButton" style="position: absolute; top: 0; right: 0;">Hide</button>
-            <h1 id="title" class="govuk-caption-xl"></h1>
-            <p id="severity" class="govuk-caption-xl"></p>
-            <p id="severity_todo" class="govuk-body"></p>
-            <p id="more_info" class="govuk-caption-xl"></p>
-            <p id="message" class="govuk-body"></p>
-            
-        </div>
-        <div id="copyright-text">
-            this uses Environment Agency flood and river level data from the real-time data API (Beta)
-        </div>
     </div>
     <script>
         var leftBar = document.getElementById('leftBar');
@@ -64,77 +43,8 @@
         showCreditsOnScreen: true
         }));
         timeset(); //cesium.js
-        getFloodWarning(); //ea_api.js
         let handler = new Cesium.ScreenSpaceEventHandler(viewer.canvas);
-        handler.setInputAction(function(click) {
-            let pickedObject = viewer.scene.pick(click.position);
-            if (Cesium.defined(pickedObject) && pickedObject.id) {
-                // Fetch data from the API when the polygon is clicked
-                let id = pickedObject.id;
-                fetch(`https://environment.data.gov.uk/flood-monitoring/id/floods/${id}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        // Get the description and message from the data
-                        var description = data.items.description;
-                        var severity = data.items.severity;
-                        
-                        var message = data.items.message;
-                        // Update the HTML elements
-                        document.getElementById('title').innerHTML = description;
-                        document.getElementById('more_info').innerHTML = `More information:`;
-                        document.getElementById('message').innerHTML = message;
-                        switch (data.items.severityLevel){
-                            case 1:
-                                var additionalText = `
-                                <span style="color: black; font-weight: normal;">
-                                        <ul>
-                                            <li>Call 999 if in immediate danger</li>
-                                            <li>Follow advice from emergency services</li>
-                                            <li>Keep yourself and your family safe</li>
-                                        </ul>
-                                    `;
-                                document.getElementById('severity').innerHTML = "Severe flood warning - Survive" + additionalText;
-                                document.getElementById('severity').style.color = "red";
-                                document.getElementById('severity').style.fontWeight = "bold"; // Add this line
-
-                                break;
-                            case 2:
-                                var additionalText = `
-                                    <span style="color: black; font-weight: normal;">
-                                            <ul>
-                                                <li>Turn off gas, water and electricity.</li>
-                                                <li>Move things upstairs or to safety.</li>
-                                                <li>Move family, pets and car to safety.</li>
-                                            </ul>
-                                        `;
-                                document.getElementById('severity').innerHTML = "Flood Alert - Act" + additionalText;
-                                document.getElementById('severity').style.color = "red";
-                                document.getElementById('severity').style.fontWeight = "bold"; // Add this line
-                                break;
-                            case 3:
-                                var additionalText = `
-                                <span style="color: black; font-weight: normal">
-                                            <ul>
-                                                <li>Prepare a bag that includes medicines and insurance documents</li>
-                                                <li>Check flood warnings</li>
-                                            </ul>
-                                        `;
-                                document.getElementById('severity').innerHTML = "Flood Alert - Prepare" + additionalText;
-                                document.getElementById('severity').style.color = "orange";
-                                document.getElementById('severity').style.fontWeight = "bold"; // Add this line
-                                break;
-                            case 4:
-                                document.getElementById('severity').innerHTML = "Flood Alert has been removed";
-                                document.getElementById('severity').style.color = "green";
-                                document.getElementById('severity').style.fontWeight = "bold"; // Add this line
-                                break;
-                        }
-                        var leftBar = document.getElementById('leftBar');
-                        leftBar.style.display = "block";
-                    })
-                    .catch(error => console.error('Error:', error));
-            }
-        }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+        
 
         const zoomToViewport = (viewport) => {
             // Calculate the center of the viewport
@@ -151,10 +61,7 @@
             // Fly the camera to the bounding sphere
             viewer.camera.flyToBoundingSphere(boundingSphere);
             // Pop up the left bar
-            document.getElementById('title').innerHTML = "Click the warning on the map for more information.";
-            document.getElementById('message').innerHTML = floodWarningMessage;
-            document.getElementById('severity').innerHTML = "";
-            document.getElementById('more_info').innerHTML = "";
+
             var leftBar = document.getElementById('leftBar');
             leftBar.style.display = "block";
 
@@ -168,7 +75,6 @@
                 roll : 0.0
             }
         });
-        getCityLabel();
         document.getElementById('hideLeftBarButton').addEventListener('click', function() {
         document.getElementById('leftBar').style.display = 'none';
          });
